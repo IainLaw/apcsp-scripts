@@ -1,0 +1,47 @@
+#!/bin≈/bash
+
+#ip=$(ifconfig wlx00212f3206ef | awk '/inet /{print $2;} ')
+ip=$(hostname -I)
+#getip
+
+baseip=`echo $ip | cut -d"." -f1-3`
+#cuts off the last term
+echo $baseip
+
+for i in  $(seq 1 255) ; do
+#loops through every ip address on the server
+
+	ipaddress=$baseip"."$i
+
+	ping -c 1 -w 0.2 $ipaddress > /dev/null 2>&1
+	#ping -c 1 $ipaddress
+	if [ $? -eq 0 ]
+	then
+
+		echo "$ipaddress is online"
+		filemac=`grep $ipaddress /proc/net/arp`
+		mac=`echo $filemac | cut -d' ' -f4`
+		echo "Mac address: $mac"
+		host=$(host $ipaddress)
+		if [ "$?" -eq 0 ]; then
+
+			echo $host
+		fi
+
+		nc -zv -w 2 $ipaddress 22 >/dev/null 2>&1
+		if [ "$?" -eq 0 ]; then
+
+			echo "$ssh port of ipaddress is open"
+		fi
+		nc -zv -w 2 $ipaddress 80 > /dev/null 2>&1
+
+		if [ "$?" -eq 0 ]; then
+			echo "$http port of ipaddress is open"
+		fi
+
+
+	fi
+
+done
+
+exit 0
