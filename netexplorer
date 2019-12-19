@@ -1,4 +1,4 @@
-#!/bin≈/bash
+#!/bin/bash
 
 #ip=$(ifconfig wlx00212f3206ef | awk '/inet /{print $2;} ')
 ip=$(hostname -I)
@@ -22,21 +22,30 @@ for i in  $(seq 1 255) ; do
 		filemac=`grep $ipaddress /proc/net/arp`
 		mac=`echo $filemac | cut -d' ' -f4`
 		echo "Mac address: $mac"
-		host=$(host $ipaddress)
+
+
+		host=`host $ipaddress | cut -d' ' -f5`
+
 		if [ "$?" -eq 0 ]; then
 
-			echo $host
+			if [[ $host == "3(NXDOMAIN)" ]]; then
+
+				echo "the hostname is unavailable"
+			else
+				echo "the hostname is $host"
+
+			fi
 		fi
 
 		nc -zv -w 2 $ipaddress 22 >/dev/null 2>&1
 		if [ "$?" -eq 0 ]; then
 
-			echo "$ssh port of ipaddress is open"
+			echo "ssh port of $ipaddress is open"
 		fi
 		nc -zv -w 2 $ipaddress 80 > /dev/null 2>&1
 
 		if [ "$?" -eq 0 ]; then
-			echo "$http port of ipaddress is open"
+			echo "http port of $ipaddress is open"
 		fi
 
 
